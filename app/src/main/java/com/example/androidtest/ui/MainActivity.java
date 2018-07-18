@@ -1,102 +1,77 @@
 package com.example.androidtest.ui;
 
-import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
-import android.util.Log;
-import android.view.View;
-import android.widget.ExpandableListAdapter;
-import android.widget.ExpandableListView;
-import android.widget.Toast;
+import android.support.design.widget.TabLayout;
+import android.support.v4.app.Fragment;
+import android.support.v4.app.FragmentManager;
+import android.support.v4.app.FragmentPagerAdapter;
+import android.support.v4.view.ViewPager;
+import android.support.v7.app.AppCompatActivity;
+import android.support.v7.widget.Toolbar;
 
 import com.example.androidtest.R;
-import com.example.androidtest.api.BackendService;
-import com.example.androidtest.listener.CallbackListener;
-import com.example.androidtest.model.AlertDetails;
-import com.example.androidtest.model.Entity;
 
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.List;
 
 public class MainActivity extends AppCompatActivity {
 
-    private BackendService backendService;
-
-    ExpandableListView expandableListView;
-    ExpandableListAdapter expandableListAdapter;
-    List<Entity> expandableListTitle;
-    private int lastExpandedPosition = -1;
+    private Toolbar toolbar;
+    private TabLayout tabLayout;
+    private ViewPager viewPager;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
 
-        backendService = BackendService.getInstance();
+        toolbar = findViewById(R.id.toolbar);
+        setSupportActionBar(toolbar);
 
-        getAllDetails();
+        viewPager = findViewById(R.id.viewpager);
+        viewPager.setOffscreenPageLimit(2);
+        setupViewPager(viewPager);
+
+        tabLayout = findViewById(R.id.tabs);
+        tabLayout.setupWithViewPager(viewPager);
+
     }
 
-    private void getAllDetails() {
-        backendService.getAllListValues(new CallbackListener<AlertDetails>() {
-            @Override
-            public void onSuccess(AlertDetails value) {
-                setAdapter(value.getEntity());
-            }
-
-            @Override
-            public void onResponseCode(Integer code) {
-
-            }
-
-            @Override
-            public void onError(int errorCode) {
-
-            }
-        });
+    private void setupViewPager(ViewPager viewPager) {
+        ViewPagerAdapter adapter = new ViewPagerAdapter(getSupportFragmentManager());
+        adapter.addFragment(new PopularFragment(), "Popular");
+        adapter.addFragment(new NearByFragment(), "NearBy");
+        adapter.addFragment(new SearchFragment(), "Search");
+        viewPager.setAdapter(adapter);
     }
 
-    private void setAdapter(List<Entity> entity) {
-        expandableListView = (ExpandableListView) findViewById(R.id.expandableListView);
+    class ViewPagerAdapter extends FragmentPagerAdapter {
+        private final List<Fragment> mFragmentList = new ArrayList<>();
+        private final List<String> mFragmentTitleList = new ArrayList<>();
 
-        expandableListTitle = new ArrayList<>();
-        expandableListTitle.addAll(entity);
-        final HashMap<Integer, Entity> expandableListDetail = new HashMap<Integer, Entity>();
-
-        int i = 0;
-
-        for (Entity entity1: entity) {
-            expandableListDetail.put(i++, entity1);
+        public ViewPagerAdapter(FragmentManager manager) {
+            super(manager);
         }
 
-        expandableListAdapter = new CustomExpandableListAdapter(this, entity, expandableListDetail);
-        expandableListView.setAdapter(expandableListAdapter);
-        expandableListView.setOnGroupExpandListener(new ExpandableListView.OnGroupExpandListener() {
+        @Override
+        public Fragment getItem(int position) {
+            return mFragmentList.get(position);
+        }
 
-            @Override
-            public void onGroupExpand(int groupPosition) {
-                if (lastExpandedPosition != -1
-                        && groupPosition != lastExpandedPosition) {
-                    expandableListView.collapseGroup(lastExpandedPosition);
-                }
-                lastExpandedPosition = groupPosition;
-            }
-        });
+        @Override
+        public int getCount() {
+            return mFragmentList.size();
+        }
 
-        expandableListView.setOnGroupCollapseListener(new ExpandableListView.OnGroupCollapseListener() {
+        public void addFragment(Fragment fragment, String title) {
+            mFragmentList.add(fragment);
+            mFragmentTitleList.add(title);
+        }
 
-            @Override
-            public void onGroupCollapse(int groupPosition) {
-
-            }
-        });
-
-        expandableListView.setOnChildClickListener(new ExpandableListView.OnChildClickListener() {
-            @Override
-            public boolean onChildClick(ExpandableListView parent, View v,
-                                        int groupPosition, int childPosition, long id) {
-                return false;
-            }
-        });
+        @Override
+        public CharSequence getPageTitle(int position) {
+            return mFragmentTitleList.get(position);
+        }
     }
+
 }

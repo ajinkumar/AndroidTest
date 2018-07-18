@@ -68,6 +68,8 @@
                         android:layout_toRightOf="@+id/productImage"
                         android:layout_marginLeft="16dp"
                         android:text="sssssss"
+                        android:drawablePadding="5dp"
+                        android:drawableLeft="@drawable/ic_mode_comment_black_24dp"
                         android:textSize="14sp"
                         android:textStyle="normal"
                         android:layout_marginTop="4dp"/>
